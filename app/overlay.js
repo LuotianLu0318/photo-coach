@@ -2,7 +2,6 @@
 // 提示文字由 DOM(ui.js)渲染;这里只画图形层。
 
 let dpr = Math.min(window.devicePixelRatio || 1, 2);
-let tintCanvas = null;   // 给剪影上色用的离屏画布
 
 export function fitCanvas(canvas) {
   const w = canvas.clientWidth, h = canvas.clientHeight;
@@ -28,23 +27,6 @@ function colorByMag(mag) {
   return 'rgba(255,255,255,0.9)';
 }
 
-// 把(白色)剪影按需染成绿色后绘制;color 为 null 则原样
-function drawTinted(ctx, img, x, y, w, h, color, alpha) {
-  ctx.globalAlpha = alpha;
-  if (!color) { ctx.drawImage(img, x, y, w, h); ctx.globalAlpha = 1; return; }
-  if (!tintCanvas) tintCanvas = document.createElement('canvas');
-  tintCanvas.width = Math.max(1, Math.round(w)); tintCanvas.height = Math.max(1, Math.round(h));
-  const tc = tintCanvas.getContext('2d');
-  tc.clearRect(0, 0, tintCanvas.width, tintCanvas.height);
-  tc.drawImage(img, 0, 0, tintCanvas.width, tintCanvas.height);
-  tc.globalCompositeOperation = 'source-in';   // 只给非透明像素上色
-  tc.fillStyle = color;
-  tc.fillRect(0, 0, tintCanvas.width, tintCanvas.height);
-  tc.globalCompositeOperation = 'source-over';
-  ctx.drawImage(tintCanvas, x, y, w, h);
-  ctx.globalAlpha = 1;
-}
-
 function arrow(ctx, x0, y0, x1, y1, color, width) {
   const a = Math.atan2(y1 - y0, x1 - x0), head = 14;
   ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = width; ctx.lineCap = 'round';
@@ -63,27 +45,7 @@ export function render(canvas, video, opts) {
   const f = video.videoWidth ? coverFit(w, h, video.videoWidth, video.videoHeight) : null;
   if (f) ctx.drawImage(video, f.dx, f.dy, f.dw, f.dh);
   const map = f ? mapper(f) : (nx, ny) => [nx * w, ny * h];
-
-  // ---- 姿势叠加:真人参考图 或 剪影(retarget + 对齐变绿)----
-  if (opts.poseImg && opts.poseImg.complete && opts.poseImg.naturalWidth) {
-    if (opts.isRef) {
-      // 真人参考图:按自身比例等高居中
-      const ih = h * 0.82, iw = ih * (opts.poseImg.naturalWidth / opts.poseImg.naturalHeight);
-      ctx.globalAlpha = 0.4; ctx.drawImage(opts.poseImg, (w - iw) / 2, (h - ih) / 2, iw, ih); ctx.globalAlpha = 1;
-    } else {
-      // 剪影:有被拍者 bbox 则贴到其位置/高度(retarget),否则居中
-      let ih = h * 0.78, cx = w / 2, cy = h / 2;
-      if (opts.box) {
-        const [bx0, by0] = map(opts.box.x0, opts.box.y0);
-        const [bx1, by1] = map(opts.box.x1, opts.box.y1);
-        ih = Math.min(h * 0.95, (by1 - by0) * 1.06);
-        cx = (bx0 + bx1) / 2; cy = (by0 + by1) / 2;
-      }
-      const iw = ih * (100 / 200);
-      const color = opts.poseAligned ? 'rgba(52,199,89,0.85)' : null;
-      drawTinted(ctx, opts.poseImg, cx - iw / 2, cy - ih / 2, iw, ih, color, 0.38);
-    }
-  }
+  // 姿势引导已移到画面角落的参考卡(DOM),不再叠在人身上 —— 见 ui.js
 
   // ---- 三分网格(可关)----
   if (opts.gridOn) {

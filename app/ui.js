@@ -1,5 +1,33 @@
-// ui.js —— DOM 层：提示气泡、姿势模板条（分类切换）、快门绿灯
-import { TEMPLATES, CATS, getPoseId } from './pose.js';
+// ui.js —— DOM 层：提示气泡、姿势模板条（分类切换）、角落参考卡、快门绿灯
+import { TEMPLATES, CATS, getPoseId, getCue, getReferenceImage, isReference, setPose, setReferencePhoto } from './pose.js';
+
+// 角落姿势参考卡：选了剪影→显示人形+名称+口令；选了真人参考图→显示照片
+export function updatePoseCard() {
+  const card = document.getElementById('pose-card');
+  if (!card) return;
+  if (isReference()) {
+    const img = getReferenceImage();
+    card.innerHTML =
+      '<div class="pc-head"><span class="pc-name">参考图</span><span class="pc-close" data-close="1">✕</span></div>' +
+      `<div class="pc-fig"><img src="${img.src}" alt="参考图"/></div>` +
+      '<div class="pc-cue">照着这张姿势摆</div>';
+    card.classList.remove('hidden');
+  } else {
+    const id = getPoseId();
+    const t = id && TEMPLATES.find((x) => x.id === id);
+    if (!t) { card.classList.add('hidden'); card.innerHTML = ''; return; }
+    card.innerHTML =
+      `<div class="pc-head"><span class="pc-name">${t.name}</span><span class="pc-close" data-close="1">✕</span></div>` +
+      `<div class="pc-fig">${t.svg}</div>` +
+      `<div class="pc-cue">${getCue(id)}</div>`;
+    card.classList.remove('hidden');
+  }
+  card.querySelector('[data-close]').addEventListener('click', () => {
+    setReferencePhoto(null);
+    if (getPoseId()) setPose(getPoseId());   // 再选一次同 id = 取消选中
+    updatePoseCard();
+  });
+}
 
 const hintsEl = document.getElementById('hints');
 const shutter = document.getElementById('shutter');

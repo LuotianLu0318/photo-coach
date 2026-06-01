@@ -5,8 +5,8 @@ import { initSensors, getRoll } from './sensors.js';
 import { analyzeLight } from './light.js';
 import { coach } from './coach.js';
 import { render } from './overlay.js';
-import { getPoseImage, isReference, getPoseId, getCue, setPose, setReferencePhoto } from './pose.js';
-import { renderHints, setShutterReady, buildPoseTray, refreshTray } from './ui.js';
+import { setPose, setReferencePhoto } from './pose.js';
+import { renderHints, setShutterReady, buildPoseTray, refreshTray, updatePoseCard } from './ui.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -31,7 +31,7 @@ $('start-btn').addEventListener('click', async () => {
 let gridOn = true;
 function setupControls() {
   const tray = $('pose-tray');
-  buildPoseTray(tray, (id) => setPose(id), () => $('ref-input').click());
+  buildPoseTray(tray, (id) => { setPose(id); updatePoseCard(); }, () => $('ref-input').click());
 
   $('grid-btn').addEventListener('click', () => {
     gridOn = !gridOn;
@@ -48,7 +48,7 @@ function setupControls() {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => { setReferencePhoto(reader.result); refreshTray(tray); };
+    reader.onload = () => { setReferencePhoto(reader.result); refreshTray(tray); updatePoseCard(); };
     reader.readAsDataURL(file);
   });
 }
@@ -75,11 +75,8 @@ function loop() {
     const { face, pose } = detect(video, now);
     const out = coach({ face, pose, roll: getRoll(), light: analyzeLight(video, faceBox(face)) });
 
-    // 提示:主焦点一条 + 姿势口令/参考图一条
-    const chips = [out.hint];
-    if (isReference()) chips.push({ level: 'tip', text: '📷 照着参考图摆' });
-    else if (getPoseId()) chips.push({ level: 'tip', text: '🧍 ' + getCue(getPoseId()) });
-    renderHints(chips);
+    // 提示:只显示当前单焦点一条(姿势口令在角落参考卡里)
+    renderHints([out.hint]);
     setShutterReady(out.ready);
 
     // 对齐瞬间震动一下(若支持)
@@ -93,8 +90,6 @@ function loop() {
   render(canvas, video, {
     roll: getRoll(), gridOn,
     focus: out?.focus, framing: out?.framing,
-    poseImg: getPoseImage(), isRef: isReference(),
-    box: out?.framing?.box, poseAligned: out?.framing?.aligned,
   });
   requestAnimationFrame(loop);
 }
