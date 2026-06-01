@@ -23,8 +23,11 @@ export function setShutterReady(ready) {
 }
 
 let curCat = CATS[0].key;
+let _onSelect = () => {}, _onPickRef = () => {};
 
-export function buildPoseTray(container, onSelect) {
+export function buildPoseTray(container, onSelect, onPickRef) {
+  _onSelect = onSelect || (() => {});
+  _onPickRef = onPickRef || (() => {});
   container.innerHTML = '';
   const cats = document.createElement('div'); cats.className = 'pose-cats';
   const thumbs = document.createElement('div'); thumbs.className = 'pose-thumbs';
@@ -34,24 +37,31 @@ export function buildPoseTray(container, onSelect) {
   CATS.forEach((c) => {
     const b = document.createElement('div');
     b.className = 'pose-cat'; b.dataset.key = c.key; b.textContent = c.name;
-    b.addEventListener('click', () => { curCat = c.key; markCats(cats); renderThumbs(thumbs, onSelect); });
+    b.addEventListener('click', () => { curCat = c.key; markCats(cats); renderThumbs(thumbs); });
     cats.appendChild(b);
   });
   markCats(cats);
-  renderThumbs(thumbs, onSelect);
+  renderThumbs(thumbs);
 }
 
 function markCats(cats) {
   cats.querySelectorAll('.pose-cat').forEach((e) => e.classList.toggle('active', e.dataset.key === curCat));
 }
 
-function renderThumbs(thumbs, onSelect) {
+function renderThumbs(thumbs) {
   thumbs.innerHTML = '';
+  // 第一个固定入口:从相册选真人参考图(幽灵叠加)
+  const ref = document.createElement('div');
+  ref.className = 'pose-thumb ref-tile';
+  ref.innerHTML = '<div class="ref-ico">📷</div><span>参考图</span>';
+  ref.addEventListener('click', () => _onPickRef());
+  thumbs.appendChild(ref);
+
   TEMPLATES.filter((t) => t.cat === curCat).forEach((t) => {
     const el = document.createElement('div');
     el.className = 'pose-thumb'; el.dataset.id = t.id;
     el.innerHTML = t.svg + `<span>${t.name}</span>`;
-    el.addEventListener('click', () => { onSelect(t.id); markThumbs(thumbs); });
+    el.addEventListener('click', () => { _onSelect(t.id); markThumbs(thumbs); });
     thumbs.appendChild(el);
   });
   markThumbs(thumbs);

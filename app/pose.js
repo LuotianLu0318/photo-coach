@@ -154,14 +154,57 @@ export const TEMPLATES = [
     torso: [[50, 64], [80, 104], [84, 200], [16, 200], [20, 104]] }) },
 ];
 
+// 每个姿势配一句口令(证据:纯剪影不够直观,必须配文字指导)
+export const CUES = {
+  'hand-hip': '重心放一条腿，一手叉腰，身体侧 30°',
+  'look-back': '身体朝前、回头看镜头，下巴微抬',
+  'arms-cross': '双臂轻抱胸前，肩膀放松别耸',
+  'hair': '一手撩头发，眼神看向斜上方',
+  'pocket': '双手插兜，肩膀压低显随性',
+  'hands-back': '双手背后，挺背收腹',
+  'heart': '双手头顶比心，笑出来',
+  'reach-up': '一手向上伸展，身体拉成斜线',
+  'lean-wall': '肩靠墙、双腿交叉，重心交给墙',
+  'wall-front': '背靠墙，一脚踩墙，手自然垂',
+  'rail': '双手扶栏前倾，挺胸送下巴向前',
+  'sit': '坐下双腿前伸，脚背绷直显腿长',
+  'hug-knee': '屈膝抱腿，下巴搭在膝上',
+  'side-sit': '双腿并拢折向一侧，一手撑地',
+  'step-sit': '坐台阶，一腿屈起一手搭膝',
+  'walk': '自然向前走，别看镜头抓拍',
+  'walk-back': '边走边回头，发丝带点动感',
+  'twirl': '转圈让裙摆飞起，张开手臂',
+  'jump': '蹲一下再跳，落地前按快门',
+  'squat': '蹲下膝盖朝外，手轻搭膝盖',
+  'kneel': '单膝跪地，另一手搭在前膝',
+  'half-chin': '上半身特写，微收下巴显脸小',
+  'chin-hand': '一手轻托腮，眼神看镜头',
+  'face-frame': '双手在脸两侧轻轻框脸',
+};
+export function getCue(id) { return CUES[id] || ''; }
+
 let selectedId = null;
 let cachedImg = null, cachedFor = null;
+let refImg = null;   // 真人参考图(用户从相册选)
 
-export function setPose(id) { selectedId = (selectedId === id) ? null : id; }
+export function setPose(id) {
+  selectedId = (selectedId === id) ? null : id;
+  if (selectedId) refImg = null;   // 选剪影时清掉参考图,二者只显示其一
+}
 export function getPoseId() { return selectedId; }
 
-// 返回选中模板的 Image（缓存），供 overlay 半透明绘制；未选返回 null
+// 用户选的真人参考图(幽灵叠加),优先级高于剪影
+export function setReferencePhoto(dataUrl) {
+  if (!dataUrl) { refImg = null; return; }
+  const img = new Image(); img.src = dataUrl;
+  refImg = img; selectedId = null;
+}
+export function getReferenceImage() { return refImg; }
+export function hasReference() { return !!refImg; }
+
+// 返回当前要叠加的图:优先真人参考图,否则选中的剪影(缓存),都没有返回 null
 export function getPoseImage() {
+  if (refImg) return refImg;
   if (!selectedId) return null;
   if (cachedFor === selectedId && cachedImg) return cachedImg;
   const t = TEMPLATES.find((x) => x.id === selectedId);
@@ -170,6 +213,9 @@ export function getPoseImage() {
   cachedImg = img; cachedFor = selectedId;
   return img;
 }
+
+// 当前叠加层是否为真人参考图(overlay 用不同比例绘制)
+export function isReference() { return !!refImg; }
 
 // ---------- 角度 / 机位 提示 ----------
 function avgY(pose, a, b) { return (pose[a].y + pose[b].y) / 2; }

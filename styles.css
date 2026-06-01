@@ -86,6 +86,8 @@ html, body {
 }
 .pose-thumb.active { border-color: #2e7dff; background: rgba(46,125,255,0.25); }
 .pose-thumb svg { width: 30px; height: 60px; }
+.ref-tile { background: rgba(46,125,255,0.18); border-color: rgba(46,125,255,0.5); }
+.ref-ico { font-size: 26px; line-height: 1; }
 
 /* 预览 */
 .preview {
