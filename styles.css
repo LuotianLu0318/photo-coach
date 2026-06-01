@@ -1,0 +1,99 @@
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body {
+  height: 100%; width: 100%; overflow: hidden;
+  background: #000; color: #fff;
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  user-select: none; -webkit-user-select: none;
+}
+.screen { position: fixed; inset: 0; }
+.hidden { display: none !important; }
+
+/* 启动页 */
+#start-screen {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 32px; gap: 16px;
+  background: radial-gradient(circle at 50% 30%, #1b2735, #000);
+}
+#start-screen h1 { font-size: 28px; }
+#start-screen .sub { color: #aab; line-height: 1.6; font-size: 15px; }
+#start-screen .hint { color: #667; font-size: 12px; max-width: 280px; line-height: 1.5; }
+.status { color: #f4a; font-size: 13px; min-height: 18px; }
+
+.big-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 14px 28px; font-size: 17px; font-weight: 600;
+  background: #2e7dff; color: #fff; border: none; border-radius: 999px;
+  text-decoration: none; cursor: pointer;
+}
+.big-btn.ghost { background: rgba(255,255,255,0.12); }
+
+/* 相机主界面 */
+#view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+.hints {
+  position: absolute; top: env(safe-area-inset-top, 12px); left: 0; right: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 12px 16px; pointer-events: none;
+}
+.hint-chip {
+  max-width: 90%; padding: 9px 16px; border-radius: 999px;
+  font-size: 15px; font-weight: 600; line-height: 1.3;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+}
+.hint-chip.block  { background: rgba(255,59,48,0.92); }   /* 阻断级：红 */
+.hint-chip.warn   { background: rgba(255,149,0,0.92); }   /* 重要：橙 */
+.hint-chip.tip    { background: rgba(0,0,0,0.55); }       /* 精修建议：黑 */
+.hint-chip.good   { background: rgba(52,199,89,0.95); }   /* 绿灯：绿 */
+
+.bottom-bar {
+  position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 16px) + 12px);
+  display: flex; align-items: center; justify-content: space-around;
+  padding: 0 32px;
+}
+.round-btn {
+  width: 52px; height: 52px; border-radius: 50%; border: none;
+  background: rgba(255,255,255,0.18); color: #fff; font-size: 22px; cursor: pointer;
+}
+.round-btn.active { background: #2e7dff; }
+.shutter {
+  width: 74px; height: 74px; border-radius: 50%; cursor: pointer;
+  border: 5px solid rgba(255,255,255,0.9); background: #fff;
+  transition: background .15s, border-color .15s, transform .1s;
+}
+.shutter:active { transform: scale(0.92); }
+.shutter.ready { border-color: #34c759; background: #34c759; } /* 绿灯可拍 */
+
+/* 姿势模板条（分类 + 缩略图）*/
+.pose-tray {
+  position: absolute; left: 0; right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 16px) + 92px);
+  display: flex; flex-direction: column; gap: 8px; padding: 10px 12px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.55));
+}
+.pose-cats { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
+.pose-cat {
+  flex: 0 0 auto; padding: 6px 14px; border-radius: 999px; cursor: pointer;
+  font-size: 13px; color: #cde; background: rgba(255,255,255,0.12); white-space: nowrap;
+}
+.pose-cat.active { background: #2e7dff; color: #fff; }
+.pose-thumbs { display: flex; gap: 10px; overflow-x: auto; }
+.pose-thumb {
+  flex: 0 0 auto; width: 60px; height: 80px; border-radius: 10px;
+  background: rgba(255,255,255,0.12); border: 2px solid transparent;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 11px; color: #cde; gap: 4px; cursor: pointer;
+}
+.pose-thumb.active { border-color: #2e7dff; background: rgba(46,125,255,0.25); }
+.pose-thumb svg { width: 30px; height: 60px; }
+
+/* 预览 */
+.preview {
+  position: absolute; inset: 0; background: #000;
+  display: flex; flex-direction: column;
+}
+#preview-img { flex: 1; width: 100%; object-fit: contain; min-height: 0; }
+.preview-actions {
+  display: flex; gap: 14px; justify-content: center;
+  padding: 20px 16px calc(env(safe-area-inset-bottom, 16px) + 20px);
+}

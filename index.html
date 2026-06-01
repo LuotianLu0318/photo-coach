@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>拍照引导神器</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./icon.svg" />
+  <link rel="icon" href="./icon.svg" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <!-- 启动页：必须一次用户点击来同时申请 摄像头 + 传感器 权限（iOS 要求手势触发） -->
+  <div id="start-screen" class="screen">
+    <h1>📸 拍照引导神器</h1>
+    <p class="sub">举着手机取景，屏幕实时告诉你怎么调<br/>构图正 · 人好看 · 光线对</p>
+    <button id="start-btn" class="big-btn">开始拍照</button>
+    <p class="hint">需要授权摄像头和方向传感器。建议用后置摄像头横竖均可。</p>
+    <p id="start-status" class="status"></p>
+  </div>
+
+  <!-- 相机主界面 -->
+  <div id="camera-screen" class="screen hidden">
+    <canvas id="view"></canvas>
+
+    <!-- 顶部：提示条 + 绿灯状态 -->
+    <div id="hints" class="hints"></div>
+
+    <!-- 底部控制栏 -->
+    <div class="bottom-bar">
+      <button id="pose-btn" class="round-btn" title="姿势模板">🧍</button>
+      <button id="shutter" class="shutter" title="拍摄"></button>
+      <button id="grid-btn" class="round-btn" title="构图线开关">#️⃣</button>
+    </div>
+
+    <!-- 姿势模板选择条 -->
+    <div id="pose-tray" class="pose-tray hidden"></div>
+
+    <!-- 拍摄后的预览 -->
+    <div id="preview" class="preview hidden">
+      <img id="preview-img" alt="刚拍的照片" />
+      <div class="preview-actions">
+        <a id="save-link" class="big-btn" download="photo.jpg">保存到相册</a>
+        <button id="retake" class="big-btn ghost">继续拍</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./app/main.js"></script>
+</body>
+</html>

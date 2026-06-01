@@ -1,0 +1,13 @@
+{
+  "name": "拍照引导神器",
+  "short_name": "拍照引导",
+  "description": "举着手机取景时实时引导构图、姿势、光线，拍出不被骂的好照片",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
