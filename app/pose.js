@@ -39,6 +39,7 @@ function person(o) {
 }
 
 export const CATS = [
+  { key: 'real',  name: '真人' },
   { key: 'stand', name: '站姿' },
   { key: 'lean',  name: '靠' },
   { key: 'sit',   name: '坐' },
@@ -185,21 +186,24 @@ export function getCue(id) { return CUES[id] || ''; }
 
 let selectedId = null;
 let cachedImg = null, cachedFor = null;
-let refImg = null;   // 真人参考图(用户从相册选)
+let refImg = null, refId = null, refCue = '';   // 参考图(内置真人照 或 用户相册图)
 
 export function setPose(id) {
   selectedId = (selectedId === id) ? null : id;
-  if (selectedId) refImg = null;   // 选剪影时清掉参考图,二者只显示其一
+  if (selectedId) { refImg = null; refId = null; refCue = ''; }   // 剪影与参考图互斥
 }
 export function getPoseId() { return selectedId; }
 
-// 用户选的真人参考图(幽灵叠加),优先级高于剪影
-export function setReferencePhoto(dataUrl) {
-  if (!dataUrl) { refImg = null; return; }
-  const img = new Image(); img.src = dataUrl;
-  refImg = img; selectedId = null;
+// 设置参考图:url 为图片地址(内置照路径 或 相册 dataURL);opts={id,cue}
+export function setReferencePhoto(url, opts) {
+  if (!url) { refImg = null; refId = null; refCue = ''; return; }
+  const img = new Image(); img.src = url;
+  refImg = img; refId = (opts && opts.id) || null; refCue = (opts && opts.cue) || '';
+  selectedId = null;
 }
 export function getReferenceImage() { return refImg; }
+export function getRefId() { return refId; }
+export function getRefCue() { return refCue; }
 export function hasReference() { return !!refImg; }
 
 // 返回当前要叠加的图:优先真人参考图,否则选中的剪影(缓存),都没有返回 null

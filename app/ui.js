@@ -1,5 +1,6 @@
 // ui.js —— DOM 层：提示气泡、姿势模板条（分类切换）、角落参考卡、快门绿灯
-import { TEMPLATES, CATS, getPoseId, getCue, getReferenceImage, isReference, setPose, setReferencePhoto } from './pose.js';
+import { TEMPLATES, CATS, getPoseId, getCue, getReferenceImage, getRefId, getRefCue, isReference, setPose, setReferencePhoto } from './pose.js';
+import { PHOTOS, photoFile } from './photos.js';
 
 // 角落姿势参考卡：选了剪影→显示人形+名称+口令；选了真人参考图→显示照片
 export function updatePoseCard() {
@@ -10,7 +11,7 @@ export function updatePoseCard() {
     card.innerHTML =
       '<div class="pc-head"><span class="pc-name">参考图</span><span class="pc-close" data-close="1">✕</span></div>' +
       `<div class="pc-fig"><img src="${img.src}" alt="参考图"/></div>` +
-      '<div class="pc-cue">照着这张姿势摆</div>';
+      `<div class="pc-cue">${getRefCue() || '照着这张姿势摆'}</div>`;
     card.classList.remove('hidden');
   } else {
     const id = getPoseId();
@@ -78,27 +79,44 @@ function markCats(cats) {
 
 function renderThumbs(thumbs) {
   thumbs.innerHTML = '';
-  // 第一个固定入口:从相册选真人参考图(幽灵叠加)
+  // 第一个固定入口:从相册选自己的真人参考图
   const ref = document.createElement('div');
   ref.className = 'pose-thumb ref-tile';
-  ref.innerHTML = '<div class="ref-ico">📷</div><span>参考图</span>';
+  ref.innerHTML = '<div class="ref-ico">📷</div><span>相册</span>';
   ref.addEventListener('click', () => _onPickRef());
   thumbs.appendChild(ref);
 
-  TEMPLATES.filter((t) => t.cat === curCat).forEach((t) => {
-    const el = document.createElement('div');
-    el.className = 'pose-thumb'; el.dataset.id = t.id;
-    el.innerHTML = t.svg + `<span>${t.name}</span>`;
-    el.addEventListener('click', () => { _onSelect(t.id); markThumbs(thumbs); });
-    thumbs.appendChild(el);
-  });
+  if (curCat === 'real') {
+    // 内置真人摆姿参考照
+    PHOTOS.forEach((p) => {
+      const el = document.createElement('div');
+      el.className = 'pose-thumb photo-thumb'; el.dataset.ref = p.id;
+      el.innerHTML = `<img src="${photoFile(p.id)}" alt="${p.name}"/><span>${p.name}</span>`;
+      el.addEventListener('click', () => {
+        setReferencePhoto(photoFile(p.id), { id: p.id, cue: p.cue });
+        updatePoseCard(); markThumbs(thumbs);
+      });
+      thumbs.appendChild(el);
+    });
+  } else {
+    // 矢量剪影
+    TEMPLATES.filter((t) => t.cat === curCat).forEach((t) => {
+      const el = document.createElement('div');
+      el.className = 'pose-thumb'; el.dataset.id = t.id;
+      el.innerHTML = t.svg + `<span>${t.name}</span>`;
+      el.addEventListener('click', () => { _onSelect(t.id); markThumbs(thumbs); });
+      thumbs.appendChild(el);
+    });
+  }
   markThumbs(thumbs);
 }
 
 function markThumbs(thumbs) {
-  const cur = getPoseId();
+  const curId = getPoseId(), curRef = getRefId();
   thumbs.querySelectorAll('.pose-thumb').forEach((el) => {
-    el.classList.toggle('active', el.dataset.id === cur);
+    const active = (el.dataset.id && el.dataset.id === curId) ||
+                   (el.dataset.ref && el.dataset.ref === curRef);
+    el.classList.toggle('active', !!active);
   });
 }
 
